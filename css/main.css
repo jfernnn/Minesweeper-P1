@@ -1,0 +1,39 @@
+h1, h3 {
+    display: flex;
+    justify-content: center;
+}
+
+#bar {
+    display: flex;
+}
+
+#minesLeft {
+    display: flex;
+    justify-content: center;
+    width: 40px;
+    margin-left: 180px;
+    border: solid;
+}
+
+button {
+    margin-left: 100px;;
+}
+
+#timer {
+    border: solid;
+    margin-left: 100px;;
+}
+
+#gameBoard div {
+    border: 1px solid black;
+}
+
+#gameBoard {
+    width: 243px;
+    border: solid;
+    display: grid;
+    margin: 33px 0 0 217px;
+    grid-template-columns: repeat(9, 27px);
+    grid-template-rows: repeat(9, 27px);
+    text-align: center;
+}
