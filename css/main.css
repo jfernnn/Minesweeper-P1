@@ -1,7 +1,24 @@
-h1, h3 {
+* {
+    /* height & width now includes border & padding */
+    box-sizing: border-box;
+}
+  
+body {
+    margin: 0;
+    font-family: Helvetica;
+}
+
+h1 {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+h3 {
     display: flex;
     justify-content: center;
 }
+
 
 #bar {
     display: flex;
@@ -16,21 +33,29 @@ h1, h3 {
 }
 
 button {
-    margin-left: 100px;;
+    color: white;
+    border: hidden;
+    background-color: slategray;
+    margin-left: 100px;
 }
 
 #timer {
+    display: flex;
+    justify-content: center;
     border: solid;
-    margin-left: 100px;;
+    margin-left: 100px;
+    width: 53px;
 }
 
 #gameBoard div {
-    border: 1px solid black;
+    font-size: 28px;
+    border: 2px solid black;
 }
 
 #gameBoard {
+    background-color: #cceef6;
     width: 243px;
-    border: solid;
+    border: 2px solid black;
     display: grid;
     margin: 33px 0 0 217px;
     grid-template-columns: repeat(9, 27px);
