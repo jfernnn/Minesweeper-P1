@@ -5,7 +5,7 @@
   
 body {
     margin: 0;
-    font-family: Helvetica;
+    font-family: "Lucida Console", Courier, monospace;
 }
 
 h1 {
@@ -45,13 +45,13 @@ button {
 }
 
 #gameboard div {
-    font-size: 28px;
+    font-size: 20px;
     border: 2px solid black;
 }
 
 #gameBoard {
-    background-color: #cceef6;
-    width: 245px;
+    background-color: #918c7e;
+    width: 246px;
     border: 2px solid black;
     display: grid;
     margin: 33px 0 0 200px;
