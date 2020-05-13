@@ -10,8 +10,7 @@ const spaceLookUp = {
 let board;
 let seconds = 0;
 let interval = null;
-let r;
-let c;
+
 let firstClick = true;
 let counter = 0;
 
@@ -71,12 +70,15 @@ function init() {
 }
 
 function render(c, r) {
-    //if(board[c][r] === -1) alert('You lose');
+
     let squareEl = document.getElementById(`c${c}r${r}`);
 
     if(board[c][r].isMine === true) {
-        squareEl.innerText = '#';
-        clearInterval(interval);
+        let bombImg = document.createElement('img');
+        bombImg.src = 'images/bomb.png';
+        bombImg.style.width = '15px';
+        bombImg.style.height = '15px';
+        squareEl.append(bombImg);
     } else {
         board[c][r].revealed = true;
 
@@ -109,9 +111,6 @@ function render(c, r) {
 }
 
 function checkWinner(){
-    if (counter === 10){
-        document.querySelector('h3').innerText = 'Look at you';
-    }  
     for(let i = 0; i < 9; i++){
         for(let j = 0; j < 9; j++){
             if (!(board[i][j].isMine)&&!(board[i][j].revealed)) {
@@ -119,8 +118,8 @@ function checkWinner(){
             }
         }
     }
+    clearInterval(interval);
     document.querySelector('h3').innerText = 'Look at you';
-    checkLoser();
 }
 
 
@@ -211,18 +210,20 @@ function handler(e) {
 function handleClick(e) {
     var col = (e.target.id).charAt(1);
     var row = (e.target.id).charAt(3);
-    if(board[col][row].isMine) {
-        for(let i = 0; i < 9; i++){
-            for(let j = 0; j < 9; j++){
-                render(i, j);
+    if(e.target.innerText !== '*'){
+        if(board[col][row].isMine) {
+            for(let i = 0; i < 9; i++){
+                for(let j = 0; j < 9; j++){
+                    render(i, j);
+                }
             }
+            document.querySelector('h3').style.marginLeft = '0px';
+            document.querySelector('h3').innerText = 'Did you expect any better?';     
+        } else {
+        render(col, row);
+        checkWinner();
         }
-        //clearInterval(interval);
-        document.querySelector('h3').innerText = 'Did you expect any better?';     
-    } else {
-    render(col, row);
     }
-    checkWinner();
 }
 
 function handleRghtClick(e) {
@@ -232,15 +233,11 @@ function handleRghtClick(e) {
     if(!board[col][row].revealed){
         if((e.target.innerText !== '*') && (parseInt(document.getElementById('minesLeft').innerText) > 0)){
             e.target.innerText = '*';
-            if (board[col][row].isMine) {
-                counter++;
-            }
+
             document.getElementById('minesLeft').innerText = `${parseInt(document.getElementById('minesLeft').innerText) - 1}`;
         } else if(e.target.innerText === '*') {
             e.target.innerText = '';
-            if (board[col][row].isMine) {
-                counter--;
-            }
+
             document.getElementById('minesLeft').innerText = `${parseInt(document.getElementById('minesLeft').innerText) + 1}`;
         }
     }
