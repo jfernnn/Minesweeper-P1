@@ -10,8 +10,10 @@ const spaceLookUp = {
 let board;
 let seconds = 0;
 let interval = null;
-let r = 0;
-let c = 0;
+let r;
+let c;
+let firstClick = true;
+let counter = 0;
 
 /*----- cached element references -----*/ 
 let gameBoardEl = document.getElementById('gameBoard');
@@ -19,8 +21,9 @@ let gameBoardEl = document.getElementById('gameBoard');
 
 /*----- event listeners -----*/ 
 $('#gameBoard').one('click', function(e) {
-    placeMines();
-    render();
+    firstClick = false;
+    placeMines(e);
+    findEmptySpaces();
     interval = setInterval(formatTime, 1000);
 })
 
@@ -43,60 +46,112 @@ function init() {
             newDiv.style.borderTopColor = 'white';
             newDiv.style.borderLeftColor = 'white';
             newDiv.style.fontSize = '24px';
-            newDiv.style.fontStlye = 'cursive'
+            newDiv.style.fontStlye = 'cursive';
+            //newDiv.style.gap = '1px';
             gameBoardEl.appendChild(newDiv);
-
         }
     }
-    //Initializes the board array to 0
-    // board = [
-    //     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    //     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    //     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    //     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    //     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    //     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    //     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    //     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    //     [0, 0, 0, 0, 0, 0, 0, 0, 0]
-    // ];
+    //Initializes the board with objects
     board = [];
-    for(let i = 0; i < 9; i++)         board[i] = [];
+    for(let i = 0; i < 9; i++) {
+        board[i] = [];
+    }
     for(let i = 0; i < 9; i++){
         for(let j = 0; j < 9; j++) {
             board[j][i] = {
                 pos: `c${j}r${i}`,
                 isMine: false,
                 revealed: false,
-                surroundsMines: 0
+                surroundsMines: 0,
+                isEmpty: false,
             }
         }
     }
     console.log(board);
-    render();
 }
 
-function render() {
+function render(c, r) {
+    //if(board[c][r] === -1) alert('You lose');
+    let squareEl = document.getElementById(`c${c}r${r}`);
+
+    if(board[c][r].isMine === true) {
+        squareEl.innerText = '#';
+        clearInterval(interval);
+    } else {
+        board[c][r].revealed = true;
+
+        squareEl.style.backgroundColor = '#c9c1ad';
+        if(board[c][r].isEmpty) {
+            revealNearbyEmpties(c, r);
+        }
+        else {
+            
+            squareEl.style.backgroundColor = '#c9c1ad';
+            squareEl.style.borderRightColor = 'black';
+            squareEl.style.borderBottomColor = 'black';
+
+            squareEl.innerText = board[c][r].surroundsMines;
+
+            if(board[c][r].surroundsMines === 1) {
+                squareEl.style.color = 'red';
+            }
+            if(board[c][r].surroundsMines === 2) {
+                squareEl.style.color = 'blue';
+            }
+            if(board[c][r].surroundsMines === 3) {
+                squareEl.style.color = 'green';
+            }
+            if(board[c][r].surroundsMines === 4){
+                squareEl.style.color = 'purple';
+            }
+        }
+    } 
+}
+
+function checkWinner(){
+    if (counter === 10){
+        document.querySelector('h3').innerText = 'Look at you';
+    }  
     for(let i = 0; i < 9; i++){
         for(let j = 0; j < 9; j++){
-            // if(board[i][j] === 1){
-            // document.getElementById(`c${i}r${j}`).innerText = board[i][j];
-            // }
+            if (!(board[i][j].isMine)&&!(board[i][j].revealed)) {
+                return;
+            }
         }
     }
+    document.querySelector('h3').innerText = 'Look at you';
+    checkLoser();
 }
 
-function placeMines() {
+
+function placeMines(e) {
     //Randomly places 10 mines throughout the board
+    var col = (e.target.id).charAt(1);
+    var row = (e.target.id).charAt(3);
     let mines1to10 = 1;
+    let r = 0;
+    let c = 0;
     while(mines1to10 <= 10) {
         r = Math.floor(Math.random() * 9);
         c = Math.floor(Math.random() * 9);
-        if(!board[c][r].isMine) {
+        if((!board[c][r].isMine)&&(board[col][row] !== board[c][r])) {
             
             board[c][r].isMine = true;
             asignNumbers(c, r);
             mines1to10++;
+        }
+
+    }
+}
+
+function findEmptySpaces() {
+    for(let i = 0; i < 9; i++){
+        for(let j = 0; j < 9; j++){
+            if(board[i][j].surroundsMines === 0) {
+                if(board[i][j].isMine === false) {
+                    board[i][j].isEmpty = true;
+                }
+            }
         }
     }
 }
@@ -104,104 +159,51 @@ function placeMines() {
 function asignNumbers(c, r) {
     //Asigns the numbers surrounding mines
     //All end cases are checked
-    if((c===8)&&(r===8)){
-        if(!board[c-1][r-1].isMine) board[c-1][r-1].surroundsMines++;
-        if(!board[c-1][r].isMine) board[c-1][r].surroundsMines++;
-        if(!board[c][r-1].isMine) board[c][r-1].surroundsMines++;
-    }
-    else if((c===0)&&(r===0)){
-        if(!board[c+1][r+1].isMine) board[c+1][r+1].surroundsMines++;
-        if(!board[c+1][r].isMine) board[c+1][r].surroundsMines++;
-        if(!board[c][r+1].isMine) board[c][r+1].surroundsMines++;
-    }
-    else if((c===0)&&(r===8)){
-        if(!board[c+1][r-1].isMine) board[c+1][r-1].surroundsMines++;
-        if(!board[c+1][r].isMine) board[c+1][r].surroundsMines++;
-        if(!board[c][r-1].isMine) board[c][r-1].surroundsMines++;
-    }
-    else if((c===8)&&(r===0)){
-        if(!board[c-1][r].isMine) board[c-1][r].surroundsMines++;
-        if(!board[c-1][r+1].isMine) board[c-1][r+1].surroundsMines++;
-        if(!board[c][r+1].isMine) board[c][r+1].surroundsMines++;
-    }
-    else if(c===8){
-        if(!board[c-1][r-1].isMine) board[c-1][r-1].surroundsMines++;
-        if(!board[c-1][r].isMine) board[c-1][r].surroundsMines++;
-        if(!board[c-1][r+1].isMine) board[c-1][r+1].surroundsMines++;
-        if(!board[c][r-1].isMine) board[c][r-1].surroundsMines++;
-        if(!board[c][r+1].isMine) board[c][r+1].surroundsMines++;
-    }
-    else if(r===8){
-        if(!board[c-1][r-1].isMine) board[c-1][r-1].surroundsMines++;
-        if(!board[c-1][r].isMine) board[c-1][r].surroundsMines++;
-        if(!board[c][r-1].isMine) board[c][r-1].surroundsMines++;
-        if(!board[c+1][r-1].isMine) board[c+1][r-1].surroundsMines++;
-        if(!board[c+1][r].isMine) board[c+1][r].surroundsMines++;   
-    }
-    else if(c===0){
-        if(!board[c][r-1].isMine) board[c][r-1].surroundsMines++;
-        if(!board[c][r+1].isMine) board[c][r+1].surroundsMines++;
-        if(!board[c+1][r-1].isMine) board[c+1][r-1].surroundsMines++;
-        if(!board[c+1][r].isMine) board[c+1][r].surroundsMines++;
-        if(!board[c+1][r+1].isMine) board[c+1][r+1].surroundsMines++;
-    }
-    else if(r===0){
-        if(!board[c-1][r+1].isMine) board[c-1][r+1].surroundsMines++;
-        if(!board[c-1][r].isMine) board[c-1][r].surroundsMines++;
-        if(!board[c][r+1].isMine) board[c][r+1].surroundsMines++;
-        if(!board[c+1][r+1].isMine) board[c+1][r+1].surroundsMines++;
-        if(!board[c+1][r].isMine) board[c+1][r].surroundsMines++;  
-    }
-    else{
-        if(!board[c-1][r-1].isMine) board[c-1][r-1].surroundsMines++;
-        if(!board[c-1][r].isMine) board[c-1][r].surroundsMines++;
-        if(!board[c-1][r+1].isMine) board[c-1][r+1].surroundsMines++;
-        if(!board[c][r-1].isMine) board[c][r-1].surroundsMines++;
-        if(!board[c][r+1].isMine) board[c][r+1].surroundsMines++;
-        if(!board[c+1][r-1].isMine) board[c+1][r-1].surroundsMines++;
-        if(!board[c+1][r].isMine) board[c+1][r].surroundsMines++;
-        if(!board[c+1][r+1].isMine) board[c+1][r+1].surroundsMines++;
-    }
-}
 
-function revealBoard(c, r) {
-    //if(board[c][r] === -1) alert('You lose');
-    if(board[c][r].isMine) {
-        document.getElementById(`c${c}r${r}`).innerText = '@';
-    } else {
-        board[c][r].revealed = true;
-        document.getElementById(`c${c}r${r}`).style.backgroundColor = '#c9c1ad';
-        document.getElementById(`c${c}r${r}`).style.borderBottomColor = 'black';
-        document.getElementById(`c${c}r${r}`).style.borderRIghtColor = 'black';
-        document.getElementById(`c${c}r${r}`).style.borderTopColor = 'white';
-        document.getElementById(`c${c}r${r}`).style.borderLeftColor = 'white';
-        if(board[c][r].surroundsMines === 0) {
-        
-        } else {
-            document.getElementById(`c${c}r${r}`).style.backgroundColor = '#c9c1ad';
-            if(board[c][r].surroundsMines === 1) {
-                document.getElementById(`c${c}r${r}`).style.color = 'red';
+    for(var i = -1; i <= 1; i++) {
+        for(var j = -1; j <= 1; j++) {
+            if(!(c + i < 0)&&!(c + i > 8)){
+                if(!(r + j < 0)&&!(r + j > 8)){
+                    if((c+i!==0)||(r+j!==0)){
+                        board[c+i][j+r].surroundsMines++;
+                    }
+                }
             }
-            if(board[c][r].surroundsMines === 2) {
-                document.getElementById(`c${c}r${r}`).style.color = 'blue';
-            }
-            if(board[c][r].surroundsMines === 3) {
-                document.getElementById(`c${c}r${r}`).style.color = 'green';
-            }
-            if(board[c][r].surroundsMines === 4){
-                document.getElementById(`c${c}r${r}`).style.color = 'purple';
-            }
-            document.getElementById(`c${c}r${r}`).style.borderRightColor = 'black';
-            document.getElementById(`c${c}r${r}`).innerText = board[c][r].surroundsMines;
         }
-    }   
+    }
+ }
+
+
+function revealNearbyEmpties(c, r) {
+    for(var i = -1; i <= 1; i++) {
+        for(var j = -1; j <= 1; j++) {
+            var zz = 0;
+            var yy = 0;
+            zz = parseInt(c) + i;
+            yy = parseInt(r) + j;
+            if(!(zz < 0)&&!(zz > 8)){
+                if(!(yy < 0)&&!(yy > 8)){
+                    if((zz!==c)||(yy!==r)){
+                        if(board[zz][yy].revealed === false){
+                            if(board[zz][yy].isMine === false){
+                                render(zz,yy);
+                                
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
+
+//Handles when someone right clicks
 function handler(e) {
     e.preventDefault();
     switch(e.button){
-        case 0: handleDblClick(e); break;
-        //case 1: console.log('sd'); break;
+        case 0: handleRghtClick(e); break;
+        
         case 2: handleClick(e); break;
     }
 }
@@ -212,29 +214,37 @@ function handleClick(e) {
     if(board[col][row].isMine) {
         for(let i = 0; i < 9; i++){
             for(let j = 0; j < 9; j++){
-                revealBoard(i, j);
+                render(i, j);
             }
         }
-        clearInterval(interval);
-        document.querySelector('h3').innerText = 'Did you expect any better?';
-        document.querySelector('h3').style.marginLeft = '200px';        
+        //clearInterval(interval);
+        document.querySelector('h3').innerText = 'Did you expect any better?';     
     } else {
-    revealBoard(col, row);
+    render(col, row);
     }
+    checkWinner();
 }
 
-function handleDblClick(e) {
+function handleRghtClick(e) {
     var col = (e.target.id).charAt(1);
     var row = (e.target.id).charAt(3);
+
     if(!board[col][row].revealed){
         if((e.target.innerText !== '*') && (parseInt(document.getElementById('minesLeft').innerText) > 0)){
             e.target.innerText = '*';
+            if (board[col][row].isMine) {
+                counter++;
+            }
             document.getElementById('minesLeft').innerText = `${parseInt(document.getElementById('minesLeft').innerText) - 1}`;
         } else if(e.target.innerText === '*') {
             e.target.innerText = '';
+            if (board[col][row].isMine) {
+                counter--;
+            }
             document.getElementById('minesLeft').innerText = `${parseInt(document.getElementById('minesLeft').innerText) + 1}`;
         }
     }
+    checkWinner();
 }
 
 function resetBtn() {

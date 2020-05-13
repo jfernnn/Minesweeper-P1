@@ -4,16 +4,16 @@
 }
   
 body {
-    margin: 0;
+    margin-left: 200px;
     font-family: "Lucida Console", Courier, monospace;
 }
 
 h1 {
-    margin-left: 218px;
+    margin-left: 18px;
 }
 
 h3 {
-    margin-left: 268px;
+    margin-left: 68px;
 }
 
 
@@ -25,7 +25,6 @@ h3 {
     display: flex;
     justify-content: center;
     width: 41px;
-    margin-left: 200px;
     border: solid;
 }
 
@@ -54,7 +53,7 @@ button {
     width: 246px;
     border: 2px solid black;
     display: grid;
-    margin: 33px 0 0 200px;
+    margin-top: 38px;
     grid-template-columns: repeat(9, 27px);
     grid-template-rows: repeat(9, 27px);
     text-align: center;
