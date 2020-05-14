@@ -1,17 +1,16 @@
 /*----- constants -----*/ 
-const spaceLookUp = {
-    '-1': 'mine',    
-    '0': 'empty',
-    '1': 'one',
-    '2': ''
-};
+const boardSize = {
+    's': [9, 9],
+    'm': [16, 16],
+    'l': [16, 30]
+}
 
 /*----- app's state (variables) -----*/ 
 let board;
 let seconds = 0;
 let interval = null;
 
-let firstClick = true;
+let newGame = true;
 let counter = 0;
 
 /*----- cached element references -----*/ 
@@ -19,13 +18,6 @@ let gameBoardEl = document.getElementById('gameBoard');
 
 
 /*----- event listeners -----*/ 
-$('#gameBoard').one('click', function(e) {
-    firstClick = false;
-    placeMines(e);
-    findEmptySpaces();
-    interval = setInterval(formatTime, 1000);
-})
-
 document.getElementById('gameBoard').addEventListener('click', handleClick);
 document.getElementById('gameBoard').addEventListener('contextmenu', handler);
 
@@ -37,6 +29,18 @@ init();
 
 function init() {
     //Create the divs/the board dynamically
+
+    //let small = document.createElement('button');
+
+
+
+    gameBoardEl.innerHTML = '';
+
+    document.querySelector('h3').style.marginLeft = '68px';
+    document.querySelector('h3').innerText = 'Good Luck...';
+    document.getElementById('minesLeft').innerText = '10';
+    document.getElementById('timer').innerText = `00:00`;
+
     for(let i = 0; i < 9; i++) {
         for(let j = 0; j < 9; j++) {
             let newDiv = document.createElement('div');
@@ -63,10 +67,10 @@ function init() {
                 revealed: false,
                 surroundsMines: 0,
                 isEmpty: false,
+                hasFlag: false
             }
         }
     }
-    console.log(board);
 }
 
 function render(c, r) {
@@ -208,35 +212,56 @@ function handler(e) {
 }
 
 function handleClick(e) {
+    if(newGame) {
+        newGame = false;
+        placeMines(e);
+        findEmptySpaces();
+        interval = setInterval(formatTime, 1000);
+    }
     var col = (e.target.id).charAt(1);
     var row = (e.target.id).charAt(3);
-    if(e.target.innerText !== '*'){
+    //if(e.target.innerText !== '*'){
         if(board[col][row].isMine) {
             for(let i = 0; i < 9; i++){
                 for(let j = 0; j < 9; j++){
                     render(i, j);
                 }
             }
+            clearInterval(interval);
             document.querySelector('h3').style.marginLeft = '0px';
             document.querySelector('h3').innerText = 'Did you expect any better?';     
         } else {
         render(col, row);
         checkWinner();
         }
-    }
+    //}
 }
 
 function handleRghtClick(e) {
-    var col = (e.target.id).charAt(1);
-    var row = (e.target.id).charAt(3);
+    var col = parseInt((e.target.id).charAt(1));
+    var row = parseInt((e.target.id).charAt(3));
+
+    let squareEl = document.getElementById(`c${col}r${row}`);
 
     if(!board[col][row].revealed){
-        if((e.target.innerText !== '*') && (parseInt(document.getElementById('minesLeft').innerText) > 0)){
-            e.target.innerText = '*';
+        if(!(board[col][row].hasFlag) && (parseInt(document.getElementById('minesLeft').innerText) > 0)){
+
+            let flagImg = document.createElement('img');
+            flagImg.src = 'images/flag.png';
+            flagImg.style.width = '15px';
+            flagImg.style.height = '15px';
+            flagImg.id = `c${col}r${row}img`;
+
+            board[col][row].hasFlag = true;
+            
+            squareEl.append(flagImg);
+            //squareEl.innerText = '*';
 
             document.getElementById('minesLeft').innerText = `${parseInt(document.getElementById('minesLeft').innerText) - 1}`;
-        } else if(e.target.innerText === '*') {
-            e.target.innerText = '';
+        } else  {
+            board[col][row].hasFlag = false
+            squareEl.removeChild(document.getElementById(`c${col}r${row}img`));
+            //squareEl.innerText = '';
 
             document.getElementById('minesLeft').innerText = `${parseInt(document.getElementById('minesLeft').innerText) + 1}`;
         }
@@ -245,24 +270,15 @@ function handleRghtClick(e) {
 }
 
 function resetBtn() {
-    for(let i = 0; i < 9; i++) {
-        for(let j = 0; j < 9; j++){
-            board[i][j].surroundsMines = 0;
-            board[i][j].isMine = false;
-            board[i][j].revealed = false;
-
-            document.getElementById(`c${i}r${j}`).innerText = '';
-            document.getElementById(`c${i}r${j}`).style.backgroundColor = '#918c7e';
-            //document.getElementById(`c${i}r${j}`).style.borderColor = 'black';
-        }
-    }
-    document.getElementById('minesLeft').innerText = '10';
-    //Clears and resets the timer so that it will
-    // restart properly
-    clearInterval(interval);
     interval = null;
     seconds = 0;
-    document.getElementById('timer').innerText = `00:00`;
+
+    init();
+    newGame = true;
+
+
+    //Clears and resets the timer so that it will
+    // restart properly
 }
 
 
