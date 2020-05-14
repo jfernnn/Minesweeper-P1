@@ -2,13 +2,20 @@
 const boardSize = {
     's': [9, 9],
     'm': [16, 16],
-    'l': [16, 30]
+    'l': [16, 30],
+}
+
+const numMines = {
+    's': 10,
+    'm': 40,
+    'l': 99
 }
 
 /*----- app's state (variables) -----*/ 
 let board;
 let seconds = 0;
 let interval = null;
+let size;
 
 let newGame = true;
 let counter = 0;
@@ -20,29 +27,47 @@ let gameBoardEl = document.getElementById('gameBoard');
 /*----- event listeners -----*/ 
 document.getElementById('gameBoard').addEventListener('click', handleClick);
 document.getElementById('gameBoard').addEventListener('contextmenu', handler);
+document.getElementById('buttons').addEventListener('click', init)
 
 document.querySelector('button').addEventListener('click', resetBtn);
 
 /*----- functions -----*/
 
-init();
 
-function init() {
+function init(e) {
     //Create the divs/the board dynamically
-
+    size = e.target.id;
     //let small = document.createElement('button');
-
-
-
+    document.getElementById('buttons').style.display = 'none';
+    gameBoardEl.style.backgroundColor = '#918c7e';
+    gameBoardEl.style.border = '2px solid black';
+    gameBoardEl.style.display = 'grid';
+    gameBoardEl.style.marginTop = '38px';
+    gameBoardEl.style.textAlign = 'center';
+    if(size === 's'){
+        gameBoardEl.style.width = '246px';
+        gameBoardEl.style.gridTemplateColumns = 'repeat(9, 27px)';
+        gameBoardEl.style.gridTemplateRows = 'repeat(9, 27px)';
+    }
+    if(size === 'm'){
+        gameBoardEl.style.width = '435px';
+        gameBoardEl.style.gridTemplateColumns = 'repeat(16, 27px)';
+        gameBoardEl.style.gridTemplateRows = 'repeat(16, 27px)';
+    }
+    if(size === 'l'){
+        gameBoardEl.style.width = '814px';
+        gameBoardEl.style.gridTemplateColumns = 'repeat(30, 27px)';
+        gameBoardEl.style.gridTemplateRows = 'repeat(16, 27px)';
+    }
     gameBoardEl.innerHTML = '';
 
     document.querySelector('h3').style.marginLeft = '68px';
     document.querySelector('h3').innerText = 'Good Luck...';
-    document.getElementById('minesLeft').innerText = '10';
+    document.getElementById('minesLeft').innerText = numMines[size];
     document.getElementById('timer').innerText = `00:00`;
 
-    for(let i = 0; i < 9; i++) {
-        for(let j = 0; j < 9; j++) {
+    for(let i = 0; i < boardSize[size][0]; i++) {
+        for(let j = 0; j < boardSize[size][1]; j++) {
             let newDiv = document.createElement('div');
             newDiv.id = `c${j}r${i}`;
             newDiv.style.border = '1px solid';
@@ -56,11 +81,11 @@ function init() {
     }
     //Initializes the board with objects
     board = [];
-    for(let i = 0; i < 9; i++) {
+    for(let i = 0; i < boardSize[size][0]; i++) {
         board[i] = [];
     }
-    for(let i = 0; i < 9; i++){
-        for(let j = 0; j < 9; j++) {
+    for(let i = 0; i < boardSize[size][0]; i++){
+        for(let j = 0; j < boardSize[size][1]; j++) {
             board[j][i] = {
                 pos: `c${j}r${i}`,
                 isMine: false,
@@ -73,11 +98,15 @@ function init() {
     }
 }
 
+
 function render(c, r) {
 
     let squareEl = document.getElementById(`c${c}r${r}`);
 
     if(board[c][r].isMine === true) {
+        if(board[c][r].hasFlag) {
+            document.getElementById(`c${c}r${r}`).removeChild(document.getElementById(`c${c}r${r}img`));
+        }
         let bombImg = document.createElement('img');
         bombImg.src = 'images/bomb.png';
         bombImg.style.width = '15px';
@@ -110,13 +139,16 @@ function render(c, r) {
             if(board[c][r].surroundsMines === 4){
                 squareEl.style.color = 'purple';
             }
+            if(board[c][r].surroundsMines === 5){
+                squareEl.style.color = 'orange';
+            }
         }
     } 
 }
 
 function checkWinner(){
-    for(let i = 0; i < 9; i++){
-        for(let j = 0; j < 9; j++){
+    for(let i = 0; i < boardSize[size][1]; i++){
+        for(let j = 0; j < boardSize[size][0]; j++){
             if (!(board[i][j].isMine)&&!(board[i][j].revealed)) {
                 return;
             }
@@ -129,14 +161,21 @@ function checkWinner(){
 
 function placeMines(e) {
     //Randomly places 10 mines throughout the board
-    var col = (e.target.id).charAt(1);
-    var row = (e.target.id).charAt(3);
+    console.log('asdfadf');
+    let idOfEl = e.target.id;
+    
+    const ind2 = (e.target.id).indexOf('r');
+    console.log(ind2);
+    var col = parseInt((e.target.id).substring(1, ind2));
+    console.log(col);
+    var row = parseInt((e.target.id).substring(ind2+1, (e.target.id).length));
+    console.log(row);
     let mines1to10 = 1;
     let r = 0;
     let c = 0;
-    while(mines1to10 <= 10) {
-        r = Math.floor(Math.random() * 9);
-        c = Math.floor(Math.random() * 9);
+    while(mines1to10 <= numMines[size]) {
+        r = Math.floor(Math.random() * boardSize[size][0]);
+        c = Math.floor(Math.random() * boardSize[size][1]);
         if((!board[c][r].isMine)&&(board[col][row] !== board[c][r])) {
             
             board[c][r].isMine = true;
@@ -148,8 +187,8 @@ function placeMines(e) {
 }
 
 function findEmptySpaces() {
-    for(let i = 0; i < 9; i++){
-        for(let j = 0; j < 9; j++){
+    for(let i = 0; i < boardSize[size][1]; i++){
+        for(let j = 0; j < boardSize[size][0]; j++){
             if(board[i][j].surroundsMines === 0) {
                 if(board[i][j].isMine === false) {
                     board[i][j].isEmpty = true;
@@ -165,8 +204,8 @@ function asignNumbers(c, r) {
 
     for(var i = -1; i <= 1; i++) {
         for(var j = -1; j <= 1; j++) {
-            if(!(c + i < 0)&&!(c + i > 8)){
-                if(!(r + j < 0)&&!(r + j > 8)){
+            if(!(c + i < 0)&&!(c + i > boardSize[size][1] - 1)){
+                if(!(r + j < 0)&&!(r + j > boardSize[size][0] - 1)){
                     if((c+i!==0)||(r+j!==0)){
                         board[c+i][j+r].surroundsMines++;
                     }
@@ -184,8 +223,8 @@ function revealNearbyEmpties(c, r) {
             var yy = 0;
             zz = parseInt(c) + i;
             yy = parseInt(r) + j;
-            if(!(zz < 0)&&!(zz > 8)){
-                if(!(yy < 0)&&!(yy > 8)){
+            if(!(zz < 0)&&!(zz > boardSize[size][1] - 1)){
+                if(!(yy < 0)&&!(yy > boardSize[size][0] - 1)){
                     if((zz!==c)||(yy!==r)){
                         if(board[zz][yy].revealed === false){
                             if(board[zz][yy].isMine === false){
@@ -218,17 +257,19 @@ function handleClick(e) {
         findEmptySpaces();
         interval = setInterval(formatTime, 1000);
     }
-    var col = (e.target.id).charAt(1);
-    var row = (e.target.id).charAt(3);
+    const ind2 = (e.target.id).indexOf('r');
+    var col = parseInt((e.target.id).substring(1, ind2));
+    var row = parseInt((e.target.id).substring(ind2+1, (e.target.id).length));
+
     //if(e.target.innerText !== '*'){
         if(board[col][row].isMine) {
-            for(let i = 0; i < 9; i++){
-                for(let j = 0; j < 9; j++){
+            for(let i = 0; i < boardSize[size][1]; i++){
+                for(let j = 0; j < boardSize[size][0]; j++){
                     render(i, j);
                 }
             }
             clearInterval(interval);
-            document.querySelector('h3').style.marginLeft = '0px';
+            document.querySelector('h3').style.marginLeft = '-20px';
             document.querySelector('h3').innerText = 'Did you expect any better?';     
         } else {
         render(col, row);
@@ -238,8 +279,9 @@ function handleClick(e) {
 }
 
 function handleRghtClick(e) {
-    var col = parseInt((e.target.id).charAt(1));
-    var row = parseInt((e.target.id).charAt(3));
+    const ind2 = (e.target.id).indexOf('r');
+    var col = parseInt((e.target.id).substring(1, ind2));
+    var row = parseInt((e.target.id).substring(ind2+1, (e.target.id).length));
 
     let squareEl = document.getElementById(`c${col}r${row}`);
 
@@ -272,8 +314,10 @@ function handleRghtClick(e) {
 function resetBtn() {
     interval = null;
     seconds = 0;
+    gameBoardEl.innerHTML = '';
+    $('#gameBoard').removeAttr('style');
+    document.getElementById('buttons').style.display = 'block';
 
-    init();
     newGame = true;
 
 

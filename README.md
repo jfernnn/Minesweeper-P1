@@ -1,10 +1,17 @@
 # Minesweeper Game
 
-lorem ipsum
+The objective of the game is to find all of the mines 
+hidden on the board. This is accomplished using the numbers
+in the spaces around each mine, which describes how many mines
+are in the surrounding spaces. There are three dificulties;
+easy, medium, and hard. Growing up, minesweeper was one of the
+only games I had to play
 
 ## Screenshot
 
-![Description of Screenshot](URL-goes-here)
+![Playing Screenshot](./images/screenshot1.jpeg)
+![Lose Screenshot](./images/screenshot2.jpeg)
+![Win Screenshot](./images/screenshot3.jpeg)
 
 ## Technologies Used
 
@@ -15,8 +22,7 @@ lorem ipsum
 
 ## Getting Started
 
-Instructions for game
-To play this game, click [here](URL-goes-here)
+To play this game, click [here](https://jfernnn.github.io/Minesweeper-P1/)
 
 ## Next Steps
 

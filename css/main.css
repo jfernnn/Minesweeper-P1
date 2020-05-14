@@ -28,16 +28,16 @@ h3 {
     border: solid;
 }
 
-button {
+#reset {
     color: white;
     border: hidden;
     background-color: slategray;
-    margin-left: 55px;
+    margin-left: 59px;
 }
 
 #timer {
     display: flex;
-    justify-content: center;
+    justify-content: center; 
     border: solid;
     margin-left: 45px;
     width: 54px;
@@ -48,13 +48,22 @@ button {
     border: 2px solid black;
 }
 
-#gameBoard {
-    background-color: #918c7e;
-    width: 246px;
-    border: 2px solid black;
-    display: grid;
-    margin-top: 38px;
-    grid-template-columns: repeat(9, 27px);
-    grid-template-rows: repeat(9, 27px);
-    text-align: center;
+#s, #m, #l {
+    width: 60px;
+    border: hidden;
+    color: white;
+    height: 30px;
+    margin: 40px 25px 0 0;
+}
+
+#s {
+    background-color: #6a8f6d;
+}
+
+#m {
+    background-color: #e0e67a;
+}
+
+#l {
+    background-color: #873533;
 }

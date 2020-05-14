@@ -12,14 +12,24 @@
     <script defer src="js/main.js"></script>
 </head>
 <body>
+    <header>
     <h1>Mine Sweeper</h1>
     <h3>Good Luck...</h3>
 
     <div id="bar">
-        <span id="minesLeft"></span>
-        <button>RESET</button>
-        <span id="timer"></span>
+        <span id="minesLeft">0</span>
+        <button id="reset">RESET</button>
+        <span id="timer">00:00</span>
     </div>
+
+    </header>
+
+    <section id="buttons">
+        <button id="s">Easy</button>
+        <button id="m">Medium</button>
+        <button id="l">Hard</button>
+    </section>
+
 
     <section id="gameBoard">
 
