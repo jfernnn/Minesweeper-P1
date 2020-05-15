@@ -4,24 +4,21 @@
 }
   
 body {
-    margin-left: 200px;
     margin-bottom: 100%;
     font-family: "Lucida Console", Courier, monospace;
     background-image: linear-gradient(to bottom right, white, #918c7e, black);
 }
 
 
-h1 {
-    margin-left: 18px;
-}
-
-h3 {
-    margin-left: 68px;
-}
-
-
-#bar {
+h1, h3 {
     display: flex;
+    justify-content: center;
+}
+
+
+#bar, #buttons {
+    display: flex;
+    justify-content: center;
 }
 
 

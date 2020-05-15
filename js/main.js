@@ -21,6 +21,7 @@ let counter = 0;
 /*----- cached element references -----*/ 
 let gameBoardEl = document.getElementById('gameBoard');
 let h3El = document.querySelector('h3');
+let minesLeftEl = document.getElementById('minesLeft');
 
 /*----- event listeners -----*/ 
 document.getElementById('gameBoard').addEventListener('click', handleClick);
@@ -42,24 +43,20 @@ function init(e) {
     gameBoardEl.style.display = 'grid';
     gameBoardEl.style.marginTop = '38px';
     gameBoardEl.style.textAlign = 'center';
+    gameBoardEl.style.justifyContent = 'center';
     if(size === 's'){
         gameBoardEl.style.width = '246px';
         gameBoardEl.style.gridTemplateColumns = 'repeat(9, 27px)';
         gameBoardEl.style.gridTemplateRows = 'repeat(9, 27px)';
         h3El.innerText = '..you got it';
-        h3El.style.marginLeft = '35px';
     }
     if(size === 'l'){
-        gameBoardEl.style.marginLeft = '-90px';
         gameBoardEl.style.width = '435px';
         gameBoardEl.style.gridTemplateColumns = 'repeat(16, 27px)';
         gameBoardEl.style.gridTemplateRows = 'repeat(16, 27px)';
-        h3El.style.marginLeft = '-20px';
         h3El.innerText = `...you're gonna need it`
     }
-
-    h3El.style.marginLeft = '68px';
-    document.getElementById('minesLeft').innerText = numMines[size];
+    minesLeftEl.innerText = numMines[size];
     document.getElementById('timer').innerText = `00:00`;
 
     for(let i = 0; i < boardSize[size]; i++) {
@@ -103,7 +100,7 @@ function render(c, r) {
     //Renders the squares with bombs if they have mines
     if(board[c][r].isMine === true) {
         if(board[c][r].hasFlag) {
-            document.getElementById(`c${c}r${r}`).removeChild(document.getElementById(`c${c}r${r}img`));
+            squareEl.removeChild(document.getElementById(`c${c}r${r}img`));
         }
         let bombImg = document.createElement('img');
         bombImg.src = 'images/bomb.png';
@@ -155,7 +152,6 @@ function checkWinner(){
         }
     }
     clearInterval(interval);
-    h3El.style.marginLeft = '60px';
     h3El.innerText = 'You Won!!';
 }
 
@@ -259,6 +255,7 @@ function handler(e) {
 
 function handleClick(e) {
     //If this is the first click on the board by the player
+    let idEl = e.target.id;
     if(newGame) {
         newGame = false;
         //Places mines and finds all empty spaces
@@ -266,9 +263,9 @@ function handleClick(e) {
         findEmptySpaces();
         interval = setInterval(formatTime, 1000);
     }
-    const ind2 = (e.target.id).indexOf('r');
-    var col = parseInt((e.target.id).substring(1, ind2));
-    var row = parseInt((e.target.id).substring(ind2+1, (e.target.id).length));
+    const ind2 = (idEl).indexOf('r');
+    var col = parseInt((idEl).substring(1, ind2));
+    var row = parseInt((idEl).substring(ind2+1, (idEl).length));
 
     if(!((board[col][row]).hasFlag)){
     if(board[col][row].isMine) {
@@ -278,7 +275,6 @@ function handleClick(e) {
             }
         }
         clearInterval(interval);
-        h3El.style.marginLeft = '-20px';
         h3El.innerText = 'Did you expect any better?';     
     } else {
     render(col, row);
@@ -295,7 +291,7 @@ function handleRghtClick(e) {
     let squareEl = document.getElementById(`c${col}r${row}`);
 
     if(!board[col][row].revealed){
-        if(!(board[col][row].hasFlag) && (parseInt(document.getElementById('minesLeft').innerText) > 0)){
+        if(!(board[col][row].hasFlag) && (parseInt(minesLeftEl.innerText) > 0)){
 
             let flagImg = document.createElement('img');
             flagImg.src = 'images/flag.png';
@@ -307,25 +303,25 @@ function handleRghtClick(e) {
             
             squareEl.append(flagImg);
 
-            document.getElementById('minesLeft').innerText = `${parseInt(document.getElementById('minesLeft').innerText) - 1}`;
+            minesLeftEl.innerText = `${parseInt(minesLeftEl.innerText) - 1}`;
         } else  {
             board[col][row].hasFlag = false
             squareEl.removeChild(document.getElementById(`c${col}r${row}img`));
 
-            document.getElementById('minesLeft').innerText = `${parseInt(document.getElementById('minesLeft').innerText) + 1}`;
+            minesLeftEl.innerText = `${parseInt(minesLeftEl.innerText) + 1}`;
         }
     }
     checkWinner();
 }
+
 
 function resetBtn() {
     interval = null;
     seconds = 0;
     gameBoardEl.innerHTML = '';
     $('#gameBoard').removeAttr('style');
-    document.getElementById('buttons').style.display = 'block';
+    document.getElementById('buttons').style.display = 'flex';
     h3El.innerText = 'Good Luck...';
-    h3El.style.marginLeft = '68px';
 
     newGame = true;
 
