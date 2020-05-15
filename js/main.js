@@ -34,8 +34,8 @@ document.getElementById('reset').addEventListener('click', resetBtn);
 
 /*----- functions -----*/
 
+//Create the divs/the board dynamically
 function init(e) {
-    //Create the divs/the board dynamically
     size = e.target.id;
 
     styleGameBoard(size);
@@ -58,7 +58,7 @@ function styleGameBoard(size) {
         gameBoardEl.style.width = '246px';
         gameBoardEl.style.gridTemplateColumns = 'repeat(9, 27px)';
         gameBoardEl.style.gridTemplateRows = 'repeat(9, 27px)';
-        h3El.innerText = '..you got it';
+        h3El.innerText = '...you got it';
     }
     if(size === 'l'){
         gameBoardEl.style.width = '435px';
@@ -339,7 +339,7 @@ function resetBtn() {
     clearInterval(interval);
     seconds = 0;
     gameBoardEl.innerHTML = '';
-    $('#gameBoard').removeAttr('style');
+    gameBoardEl.removeAttribute('style');
     buttonsEl.style.display = 'flex';
     h3El.innerText = 'Good Luck...';
     minesLeftEl.innerText = '0';
