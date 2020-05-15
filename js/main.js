@@ -15,6 +15,7 @@ let seconds = 0;
 let interval = null;
 let size;
 let newGame = true;
+let gameOver = false;
 
 /*----- cached element references -----*/ 
 let gameBoardEl = document.getElementById('gameBoard');
@@ -37,6 +38,7 @@ document.getElementById('reset').addEventListener('click', resetBtn);
 //Create the divs/the board dynamically
 function init(e) {
     size = e.target.id;
+    gameOver = false;
 
     styleGameBoard(size);
     createGameBoardDivs(size);
@@ -47,6 +49,7 @@ function init(e) {
 function styleGameBoard(size) {
     buttonsEl.style.display = 'none';
     gameBoardEl.innerHTML = '';
+
     gameBoardEl.style.backgroundColor = '#918c7e';
     gameBoardEl.style.border = '2px solid black';
     gameBoardEl.style.display = 'grid';
@@ -54,6 +57,7 @@ function styleGameBoard(size) {
     gameBoardEl.style.textAlign = 'center';
     gameBoardEl.style.justifyContent = 'center';
     gameBoardEl.style.margin = '30px auto';
+
     if(size === 's'){
         gameBoardEl.style.width = '246px';
         gameBoardEl.style.gridTemplateColumns = 'repeat(9, 27px)';
@@ -76,10 +80,12 @@ function createGameBoardDivs(size) {
         for(let j = 0; j < boardSize[size]; j++) {
             let newDiv = document.createElement('div');
             newDiv.id = `c${j}r${i}`;
+
             newDiv.style.border = '1px solid';
             newDiv.style.borderTopColor = 'white';
             newDiv.style.borderLeftColor = 'white';
             newDiv.style.fontSize = '24px';
+
             gameBoardEl.appendChild(newDiv);
         }
     }
@@ -115,13 +121,17 @@ function render(c, r) {
         if(board[c][r].hasFlag) {
             squareEl.removeChild(document.getElementById(`c${c}r${r}img`));
         }
+        gameOver = true;
         let bombImg = document.createElement('img');
+
         bombImg.src = 'images/bomb.png';
         bombImg.style.width = '15px';
         bombImg.style.height = '15px';
+
         squareEl.append(bombImg);
     } else {
         board[c][r].revealed = true;
+
         squareEl.style.backgroundColor = '#c9c1ad';
         //Reveals the nearby squares if the square selected is empty
         if(board[c][r].isEmpty) {
@@ -168,6 +178,7 @@ function checkWinner(){
             }
         }
     }
+    gameOver = true;
     clearInterval(interval);
     h3El.innerText = 'You Won!!';
 }
@@ -284,7 +295,7 @@ function handleClick(e) {
     //finds the row and column of the div from the elements id
 
     //Handles the click; if they click a mine, the games over. If not, the board renders;
-    if(!((board[col][row]).hasFlag)){
+    if((!((board[col][row]).hasFlag))&&(!gameOver)){
         if(board[col][row].isMine) {
             for(let i = 0; i < boardSize[size]; i++){
                 for(let j = 0; j < boardSize[size]; j++){
@@ -310,7 +321,7 @@ function handleRghtClick(e) {
 
     //If the square does not have a flag, place a flag
     //Otherwise, remove the flag that's already there
-    if(!board[col][row].revealed){
+    if((!board[col][row].revealed)&&(!gameOver)){
         if(!(board[col][row].hasFlag) && (parseInt(minesLeftEl.innerText) > 0)){
 
             let flagImg = document.createElement('img');
