@@ -14,19 +14,19 @@ let board;
 let seconds = 0;
 let interval = null;
 let size;
-
 let newGame = true;
-let counter = 0;
 
 /*----- cached element references -----*/ 
 let gameBoardEl = document.getElementById('gameBoard');
 let h3El = document.querySelector('h3');
 let minesLeftEl = document.getElementById('minesLeft');
+let timerEl = document.getElementById('timer');
+let buttonsEl = document.getElementById('buttons');
 
 /*----- event listeners -----*/ 
-document.getElementById('gameBoard').addEventListener('click', handleClick);
-document.getElementById('gameBoard').addEventListener('contextmenu', handler);
-document.getElementById('buttons').addEventListener('click', init)
+gameBoardEl.addEventListener('click', handleClick);
+gameBoardEl.addEventListener('contextmenu', handler);
+buttonsEl.addEventListener('click', init)
 document.getElementById('reset').addEventListener('click', resetBtn);
 
 /*----- functions -----*/
@@ -34,16 +34,24 @@ document.getElementById('reset').addEventListener('click', resetBtn);
 
 function init(e) {
     //Create the divs/the board dynamically
-    gameBoardEl.innerHTML = '';
     size = e.target.id;
 
-    document.getElementById('buttons').style.display = 'none';
+    styleGameBoard(size);
+    createGameBoard(size);
+
+}
+
+//Dynamically styles the game board depending on the difficulty chosen
+function styleGameBoard(size) {
+    buttonsEl.style.display = 'none';
+    gameBoardEl.innerHTML = '';
     gameBoardEl.style.backgroundColor = '#918c7e';
     gameBoardEl.style.border = '2px solid black';
     gameBoardEl.style.display = 'grid';
     gameBoardEl.style.marginTop = '38px';
     gameBoardEl.style.textAlign = 'center';
     gameBoardEl.style.justifyContent = 'center';
+    gameBoardEl.style.margin = '30px auto';
     if(size === 's'){
         gameBoardEl.style.width = '246px';
         gameBoardEl.style.gridTemplateColumns = 'repeat(9, 27px)';
@@ -57,8 +65,11 @@ function init(e) {
         h3El.innerText = `...you're gonna need it`
     }
     minesLeftEl.innerText = numMines[size];
-    document.getElementById('timer').innerText = `00:00`;
+    timerEl.innerText = `00:00`;
+}
 
+function createGameBoard(size) {
+    //Creates the board elements on the dom
     for(let i = 0; i < boardSize[size]; i++) {
         for(let j = 0; j < boardSize[size]; j++) {
             let newDiv = document.createElement('div');
@@ -67,12 +78,11 @@ function init(e) {
             newDiv.style.borderTopColor = 'white';
             newDiv.style.borderLeftColor = 'white';
             newDiv.style.fontSize = '24px';
-            newDiv.style.fontStlye = 'cursive';
-            //newDiv.style.gap = '1px';
             gameBoardEl.appendChild(newDiv);
         }
     }
-    //Initializes the board with objects
+
+    //Creates the board elements in a 2D array of objects
     board = [];
     for(let i = 0; i < boardSize[size]; i++) {
         board[i] = [];
@@ -89,12 +99,11 @@ function init(e) {
             }
         }
     }
-
 }
 
 
 function render(c, r) {
-    //Grabs the div
+    //Grabs the div of the square on the board
     let squareEl = document.getElementById(`c${c}r${r}`);
 
     //Renders the squares with bombs if they have mines
@@ -117,29 +126,34 @@ function render(c, r) {
         }
         else {
             //Styles the numbers and squares after they are revealed
-            squareEl.style.backgroundColor = '#c9c1ad';
-            squareEl.style.borderRightColor = 'black';
-            squareEl.style.borderBottomColor = 'black';
-
-            squareEl.innerText = board[c][r].surroundsMines;
-
-            if(board[c][r].surroundsMines === 1) {
-                squareEl.style.color = 'red';
-            }
-            if(board[c][r].surroundsMines === 2) {
-                squareEl.style.color = 'blue';
-            }
-            if(board[c][r].surroundsMines === 3) {
-                squareEl.style.color = 'green';
-            }
-            if(board[c][r].surroundsMines === 4){
-                squareEl.style.color = 'purple';
-            }
-            if(board[c][r].surroundsMines === 5){
-                squareEl.style.color = 'orange';
-            }
+            styleNumbers(squareEl, c, r);
         }
     } 
+}
+
+//Styles each square depending on how many mines surround it
+function styleNumbers(squareEl, c, r) {
+    squareEl.style.backgroundColor = '#c9c1ad';
+    squareEl.style.borderRightColor = 'black';
+    squareEl.style.borderBottomColor = 'black';
+
+    squareEl.innerText = board[c][r].surroundsMines;
+
+    if(board[c][r].surroundsMines === 1) {
+        squareEl.style.color = 'red';
+    }
+    if(board[c][r].surroundsMines === 2) {
+        squareEl.style.color = 'blue';
+    }
+    if(board[c][r].surroundsMines === 3) {
+        squareEl.style.color = 'green';
+    }
+    if(board[c][r].surroundsMines === 4){
+        squareEl.style.color = 'purple';
+    }
+    if(board[c][r].surroundsMines === 5){
+        squareEl.style.color = 'orange';
+    }
 }
 
 //If all the squares that are not mines are revealed, the player wins
@@ -160,7 +174,7 @@ function placeMines(e) {
     //Randomly places mines throughout the board
     let idOfEl = e.target.id;
     
-
+    //finds the row and column of the div from the elements id
     const ind2 = (idOfEl).indexOf('r');
     var col = parseInt((idOfEl).substring(1, ind2));
     var row = parseInt((idOfEl).substring(ind2+1, (idOfEl).length));
@@ -183,10 +197,9 @@ function placeMines(e) {
     }
 }
 
+//Finds all empty spaces on the board and marks them
+//All end cases are checked
 function findEmptySpaces() {
-    //Finds all empty spaces on the board and marks them
-    //All end cases are checked
-
     for(let i = 0; i < boardSize[size]; i++){
         for(let j = 0; j < boardSize[size]; j++){
             if(board[i][j].surroundsMines === 0) {
@@ -198,40 +211,37 @@ function findEmptySpaces() {
     }
 }
 
+//Asigns the numbers surrounding mines
+//All end cases are checked
 function asignNumbers(c, r) {
-    //Asigns the numbers surrounding mines
-    //All end cases are checked
-
     for(var i = -1; i <= 1; i++) {
         for(var j = -1; j <= 1; j++) {
             if(!(c + i < 0)&&!(c + i > boardSize[size] - 1)){
                 if(!(r + j < 0)&&!(r + j > boardSize[size] - 1)){
-                    if((c+i!==0)||(r+j!==0)){
+                    //if((c+i!==c)||(r+j!==j)){
                         board[c+i][j+r].surroundsMines++;
-                    }
+                    //}
                 }
             }
         }
     }
  }
 
-
+//Marks all spaces on the board that are empty
+//Checks all end cases
 function revealNearbyEmpties(c, r) {
-    //Marks all spaces on the board that are empty
-    //Checks all end cases
-
+    var col = 0;
+    var row = 0;
     for(var i = -1; i <= 1; i++) {
         for(var j = -1; j <= 1; j++) {
-            var zz = 0;
-            var yy = 0;
-            zz = parseInt(c) + i;
-            yy = parseInt(r) + j;
-            if(!(zz < 0)&&!(zz > boardSize[size] - 1)){
-                if(!(yy < 0)&&!(yy > boardSize[size] - 1)){
-                    if((zz!==c)||(yy!==r)){
-                        if(board[zz][yy].revealed === false){
-                            if(board[zz][yy].isMine === false){
-                                render(zz,yy);
+            col = parseInt(c) + i;
+            row = parseInt(r) + j;
+            if(!(col < 0)&&!(col > boardSize[size] - 1)){
+                if(!(row < 0)&&!(row > boardSize[size] - 1)){
+                    if((col!==c)||(row!==r)){
+                        if(board[col][row].revealed === false){
+                            if(board[col][row].isMine === false){
+                                render(col,row);
                                 
                             }
                         }
@@ -263,27 +273,30 @@ function handleClick(e) {
         findEmptySpaces();
         interval = setInterval(formatTime, 1000);
     }
+    //finds the row and column of the div from the elements id
     const ind2 = (idEl).indexOf('r');
     var col = parseInt((idEl).substring(1, ind2));
     var row = parseInt((idEl).substring(ind2+1, (idEl).length));
 
+    //Handles the click; if they click a mine, the games over. If not, the board renders;
     if(!((board[col][row]).hasFlag)){
-    if(board[col][row].isMine) {
-        for(let i = 0; i < boardSize[size]; i++){
-            for(let j = 0; j < boardSize[size]; j++){
-                render(i, j);
+        if(board[col][row].isMine) {
+            for(let i = 0; i < boardSize[size]; i++){
+                for(let j = 0; j < boardSize[size]; j++){
+                    render(i, j);
+                }
             }
+            clearInterval(interval);
+            h3El.innerText = 'Did you really think you could win?';     
+        } else {
+            render(col, row);
+            checkWinner();
         }
-        clearInterval(interval);
-        h3El.innerText = 'Did you expect any better?';     
-    } else {
-    render(col, row);
-    checkWinner();
-    }
     }
 }
 
 function handleRghtClick(e) {
+    //finds the row and column of the div from the elements id
     const ind2 = (e.target.id).indexOf('r');
     var col = parseInt((e.target.id).substring(1, ind2));
     var row = parseInt((e.target.id).substring(ind2+1, (e.target.id).length));
@@ -316,18 +329,15 @@ function handleRghtClick(e) {
 
 
 function resetBtn() {
-    interval = null;
+    clearInterval(interval);
     seconds = 0;
     gameBoardEl.innerHTML = '';
     $('#gameBoard').removeAttr('style');
-    document.getElementById('buttons').style.display = 'flex';
+    buttonsEl.style.display = 'flex';
     h3El.innerText = 'Good Luck...';
-
+    minesLeftEl.innerText = '0';
+    timerEl.innerText = `00:00`;
     newGame = true;
-
-
-    //Clears and resets the timer so that it will
-    // restart properly
 }
 
 //Formats the timer to display in the 00:00 format
@@ -335,5 +345,5 @@ function formatTime() {
     seconds++;
     const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
     const secs = (seconds % 60).toString().padStart(2, '0');
-    document.getElementById('timer').innerText = `${mins}:${secs}`;
+    timerEl.innerText = `${mins}:${secs}`;
 }
