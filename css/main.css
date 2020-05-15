@@ -31,7 +31,6 @@ h1, h3 {
 #minesLeft {
     border: hidden;
     width: 41px;
-
 }
 
 #reset {
@@ -51,7 +50,6 @@ h1, h3 {
     justify-content: center; 
     border: solid;
 }
-
 
 #gameboard div {
     font-size: 20px;

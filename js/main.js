@@ -21,24 +21,26 @@ let gameBoardEl = document.getElementById('gameBoard');
 let h3El = document.querySelector('h3');
 let minesLeftEl = document.getElementById('minesLeft');
 let timerEl = document.getElementById('timer');
+let easyDifEl = document.getElementById('s');
+let hardDifEl = document.getElementById('l');
 let buttonsEl = document.getElementById('buttons');
 
 /*----- event listeners -----*/ 
 gameBoardEl.addEventListener('click', handleClick);
 gameBoardEl.addEventListener('contextmenu', handler);
-buttonsEl.addEventListener('click', init)
+easyDifEl.addEventListener('click', init);
+hardDifEl.addEventListener('click', init);
 document.getElementById('reset').addEventListener('click', resetBtn);
 
 /*----- functions -----*/
-
 
 function init(e) {
     //Create the divs/the board dynamically
     size = e.target.id;
 
     styleGameBoard(size);
-    createGameBoard(size);
-
+    createGameBoardDivs(size);
+    createGameBoardArray(size);
 }
 
 //Dynamically styles the game board depending on the difficulty chosen
@@ -68,8 +70,8 @@ function styleGameBoard(size) {
     timerEl.innerText = `00:00`;
 }
 
-function createGameBoard(size) {
-    //Creates the board elements on the dom
+//Creates the board elements on the dom
+function createGameBoardDivs(size) {
     for(let i = 0; i < boardSize[size]; i++) {
         for(let j = 0; j < boardSize[size]; j++) {
             let newDiv = document.createElement('div');
@@ -81,8 +83,10 @@ function createGameBoard(size) {
             gameBoardEl.appendChild(newDiv);
         }
     }
+}
 
-    //Creates the board elements in a 2D array of objects
+//Creates the board elements in a 2D array of objects
+function createGameBoardArray(size) {
     board = [];
     for(let i = 0; i < boardSize[size]; i++) {
         board[i] = [];
@@ -107,7 +111,7 @@ function render(c, r) {
     let squareEl = document.getElementById(`c${c}r${r}`);
 
     //Renders the squares with bombs if they have mines
-    if(board[c][r].isMine === true) {
+    if(board[c][r].isMine) {
         if(board[c][r].hasFlag) {
             squareEl.removeChild(document.getElementById(`c${c}r${r}img`));
         }
@@ -118,7 +122,6 @@ function render(c, r) {
         squareEl.append(bombImg);
     } else {
         board[c][r].revealed = true;
-
         squareEl.style.backgroundColor = '#c9c1ad';
         //Reveals the nearby squares if the square selected is empty
         if(board[c][r].isEmpty) {
@@ -175,13 +178,14 @@ function placeMines(e) {
     let idOfEl = e.target.id;
     
     //finds the row and column of the div from the elements id
-    const ind2 = (idOfEl).indexOf('r');
-    var col = parseInt((idOfEl).substring(1, ind2));
-    var row = parseInt((idOfEl).substring(ind2+1, (idOfEl).length));
+    const ind = (idOfEl).indexOf('r');
+    let col = parseInt((idOfEl).substring(1, ind));
+    let row = parseInt((idOfEl).substring(ind+1, (idOfEl).length));
 
     let mines1to10 = 1;
     let r = 0;
     let c = 0;
+
     while(mines1to10 <= numMines[size]) {
         //finds 2 random numbers to find a random board slot
         r = Math.floor(Math.random() * boardSize[size]);
@@ -214,26 +218,24 @@ function findEmptySpaces() {
 //Asigns the numbers surrounding mines
 //All end cases are checked
 function asignNumbers(c, r) {
-    for(var i = -1; i <= 1; i++) {
-        for(var j = -1; j <= 1; j++) {
+    for(let i = -1; i <= 1; i++) {
+        for(let j = -1; j <= 1; j++) {
             if(!(c + i < 0)&&!(c + i > boardSize[size] - 1)){
                 if(!(r + j < 0)&&!(r + j > boardSize[size] - 1)){
-                    //if((c+i!==c)||(r+j!==j)){
-                        board[c+i][j+r].surroundsMines++;
-                    //}
+                    board[c+i][j+r].surroundsMines++;
                 }
             }
         }
     }
  }
 
-//Marks all spaces on the board that are empty
+//Marks and reveals nearby spaces on the board that are empty
 //Checks all end cases
 function revealNearbyEmpties(c, r) {
     var col = 0;
     var row = 0;
-    for(var i = -1; i <= 1; i++) {
-        for(var j = -1; j <= 1; j++) {
+    for(let i = -1; i <= 1; i++) {
+        for(let j = -1; j <= 1; j++) {
             col = parseInt(c) + i;
             row = parseInt(r) + j;
             if(!(col < 0)&&!(col > boardSize[size] - 1)){
@@ -264,19 +266,22 @@ function handler(e) {
 }
 
 function handleClick(e) {
-    //If this is the first click on the board by the player
+    //Sets the idEl with the id of e and finds the row and column of the square selected
     let idEl = e.target.id;
+    const ind = (idEl).indexOf('r');
+    let col = parseInt((idEl).substring(1, ind));
+    let row = parseInt((idEl).substring(ind+1, (idEl).length));
+
+    //creates the board if it is the first click on the board 
     if(newGame) {
         newGame = false;
         //Places mines and finds all empty spaces
         placeMines(e);
         findEmptySpaces();
+        //Initializes the timer
         interval = setInterval(formatTime, 1000);
     }
     //finds the row and column of the div from the elements id
-    const ind2 = (idEl).indexOf('r');
-    var col = parseInt((idEl).substring(1, ind2));
-    var row = parseInt((idEl).substring(ind2+1, (idEl).length));
 
     //Handles the click; if they click a mine, the games over. If not, the board renders;
     if(!((board[col][row]).hasFlag)){
@@ -297,12 +302,14 @@ function handleClick(e) {
 
 function handleRghtClick(e) {
     //finds the row and column of the div from the elements id
-    const ind2 = (e.target.id).indexOf('r');
-    var col = parseInt((e.target.id).substring(1, ind2));
-    var row = parseInt((e.target.id).substring(ind2+1, (e.target.id).length));
+    const ind = (e.target.id).indexOf('r');
+    let col = parseInt((e.target.id).substring(1, ind));
+    let row = parseInt((e.target.id).substring(ind+1, (e.target.id).length));
 
     let squareEl = document.getElementById(`c${col}r${row}`);
 
+    //If the square does not have a flag, place a flag
+    //Otherwise, remove the flag that's already there
     if(!board[col][row].revealed){
         if(!(board[col][row].hasFlag) && (parseInt(minesLeftEl.innerText) > 0)){
 
@@ -324,10 +331,10 @@ function handleRghtClick(e) {
             minesLeftEl.innerText = `${parseInt(minesLeftEl.innerText) + 1}`;
         }
     }
-    checkWinner();
 }
 
-
+//Handles reseting the game, including clearing the timer, clearing the board, 
+// reappearing the difficulty buttons, gets ready for a new game
 function resetBtn() {
     clearInterval(interval);
     seconds = 0;
